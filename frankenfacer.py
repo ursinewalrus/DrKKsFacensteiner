@@ -4,31 +4,58 @@ import stitch
 import feature_chop
 import pprint as pp
 
-face_data = json.load(open('output.json'))
-face_image = Image.open('5people.jpg')
 
-faces = []
-for feature_set in face_data:
-	faces.append(feature_chop.get_face_image_parts_boxes(feature_set,face_image))
 
-left_eyebrow = feature_chop.get_feature_from_random_face(faces,"left_eyebrow")
-right_eyebrow = feature_chop.get_feature_from_random_face(faces,"right_eyebrow")
+def frankenify(face_file):
+	face_image = Image.open(face_file)
+	face_data = json.load(open('output.json'))
+	faces = []
+	for feature_set in face_data:
+		faces.append(feature_chop.get_face_image_parts_boxes(feature_set,face_image))
 
-left_eye = feature_chop.get_feature_from_random_face(faces,"left_eye")
-right_eye = feature_chop.get_feature_from_random_face(faces,"right_eye")
+	left_eyebrow = feature_chop.get_feature_from_random_face(faces,"left_eyebrow")
+	right_eyebrow = feature_chop.get_feature_from_random_face(faces,"right_eyebrow")
 
-nose = feature_chop.get_feature_from_random_face(faces,"nose")
-brow = stitch.combine_ims(left_eyebrow,right_eyebrow,"hort")
-eyes = stitch.combine_ims(left_eye,right_eye,"hort")
+	left_eye = feature_chop.get_feature_from_random_face(faces,"left_eye")
+	right_eye = feature_chop.get_feature_from_random_face(faces,"right_eye")
 
-eye_area = stitch.combine_ims(brow,eyes,"vert")
-eye_and_nose = stitch.combine_ims(eye_area,nose,"vert")
+	nose = feature_chop.get_feature_from_random_face(faces,"nose")
 
-mouth = feature_chop.get_feature_from_random_face(faces,"bottom_lip")
+	left_cheek = feature_chop.get_feature_from_random_face(faces,"left_cheek")
+	right_cheek = feature_chop.get_feature_from_random_face(faces,"right_cheek")
 
-basic_face = stitch.combine_ims(eye_and_nose,mouth,"vert")
+	mouth = feature_chop.get_feature_from_random_face(faces,"bottom_lip")
 
-basic_face.save("franken.jpg")
+
+	brow = stitch.combine_ims(left_eyebrow,right_eyebrow,"hort")
+	eyes = stitch.combine_ims(left_eye,right_eye,"hort",1.5)
+	cheeks_and_nose = stitch.combine_ims(stitch.combine_ims(left_cheek,nose,"hort"),right_cheek,"hort")
+
+	eye_area = stitch.combine_ims(brow,eyes,"vert")
+	eye_and_nose = stitch.combine_ims(eye_area,cheeks_and_nose,"vert")
+
+
+	basic_face = stitch.combine_ims(eye_and_nose,mouth,"vert")
+
+	basic_face.save("franken.jpg")
+	basic_face.show()
+
+def feature_replace(face_file):
+	face_image = Image.open(face_file)
+	# oh wait i dont actually have full face cords, will hold off on this
+	# 4 point chin actually gets everything so could work...
+frankenify('5people.jpg')
+
+# while selection != 'done':
+# 	selection = raw_input()
+# 	if selection == 'frankenify':
+# 		file = raw_input('File Name')
+# 		frankenify(file)
+# 	elif selection == "mask":
+# 		file = raw_input('File Name')
+# 		feature_replace(file)
+# 	pp.pprint(face_parts)
+
 # stitch.combine_ims()
 # pp.pprint(faces)
 # lets say a face is 

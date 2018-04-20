@@ -12,6 +12,9 @@ def get_face_image_parts_boxes(face_parameters,image):
 	# bottom_lip seems to get whole mouth
 	# chin gets basically the whole face
 	full_nose_cords = [0,0,0,0]
+	left_cheek_cords = [0,0,0,0]
+	right_cheek_cords = [0,0,0,0]
+	# (minx, miny, maxx, maxy)
 	for feature in face_parameters:
 		feature_params = face_parameters[feature]
 
@@ -25,15 +28,39 @@ def get_face_image_parts_boxes(face_parameters,image):
 		face_feature_image = image.crop((minX,minY,maxX,maxY))
 		chopped_face[feature] = {"image": face_feature_image, "cords": (minX,minY,maxX,maxY)}
 
+		# making full nose
 		if feature == 'nose_bridge':
 			full_nose_cords[1] = minY
 		if feature == 'nose_tip':
 			full_nose_cords[0] = minX
 			full_nose_cords[2] = maxX
 			full_nose_cords[3] = maxY
+		
+		# making cheeks
+		# they art catching some nose, push out from nose, need eye and nose
+		if feature == 'left_eye':
+			left_cheek_cords[0] = minX
+			left_cheek_cords[1] = maxY
+		if feature == 'right_eye':
+			right_cheek_cords[1] = maxY
+			right_cheek_cords[2] = maxX
+		if feature == 'nose_tip':
+			left_cheek_cords[2] = minX
+			right_cheek_cords[0] = maxX
+		if feature == 'top_lip':
+			left_cheek_cords[3] = minY
+			right_cheek_cords[3] = minY
+
+
 
 	chopped_face['nose'] = {"image": image.crop(tuple(full_nose_cords)), "cords":tuple(full_nose_cords)}
+	chopped_face['left_cheek'] = {"image": image.crop(tuple(left_cheek_cords)), "cords":tuple(left_cheek_cords)}
+	chopped_face['right_cheek'] = {"image": image.crop(tuple(right_cheek_cords)), "cords":tuple(right_cheek_cords)}
+	# chopped_face["left_cheek"]["image"].show()
+	# chopped_face["right_cheek"]["image"].show()
+	# sys.exit(0)
 	chopped_face = pad_face_image_parts(chopped_face,image)
+
 	return chopped_face
 
 # padd each feature with skin around it
@@ -42,11 +69,13 @@ def get_face_image_parts_boxes(face_parameters,image):
 	# cheeks
 	# chin? -> maybe get bottom middle of current chin
 	# for eyes/brows->maybe snag a little extra on the sides
-	# eyes -> maybe snag out to chin??
+	# eyes -> maybe snag out to chin??, get extra below
+	# for nose -> little extra sides->out to x's of eyes, cut a little on top
 	# brows also maybe extra above
 	# for mouth -> little extra above and below
-	# for nose -> little extra sides
 def pad_face_image_parts(face_parts,image):
+	# maybe abs() all the x cord additions
+	# adds padding between eyes
 	for (l,r) in [("left_eye","right_eye"),("left_eyebrow","right_eyebrow")]:
 		x_eye_distance = (face_parts[r]["cords"][0] - face_parts[l]["cords"][2])/2
 		
@@ -57,11 +86,19 @@ def pad_face_image_parts(face_parts,image):
 		old_right_eye_cords = face_parts[r]["cords"]
 		new_right_eye_cords = (old_right_eye_cords[0] - x_eye_distance,old_right_eye_cords[1],old_right_eye_cords[2],old_right_eye_cords[3])
 		face_parts[r]["padded"] = image.crop(new_right_eye_cords) 
+	# adds padding above mouth
+	upper_lip_height = (face_parts['top_lip']['cords'][1] - face_parts['nose_tip']['cords'][3])
+	old_mouth_cords = face_parts["bottom_lip"]["cords"]
+	new_mouth_cords = (old_mouth_cords[0],old_mouth_cords[1] - upper_lip_height,old_mouth_cords[2],old_mouth_cords[3])
+	face_parts["bottom_lip"]["padded"] = image.crop(new_mouth_cords)
 
-	# face_parts["right_eye"]["image"].show()
-	# face_parts["right_eye"]["padded"].show()
-
-
+	# adds cheeks around the nose
+	# nose_left_extension = face_parts["nose"]["cords"][0] - face_parts["left_eye"]["cords"][0]
+	# nose_right_extension = face_parts["nose"]["cords"][3] - face_parts["right_eye"]["cords"][3] 
+	# old_nose_cords = face_parts["nose"]["cords"]
+	# nose_off_top = old_nose_cords[1] - max(face_parts["left_eye"]["cords"][3],face_parts["right_eye"]["cords"][3])
+	# new_nose_cords  = (old_nose_cords[0] - nose_left_extension, old_nose_cords[1] - nose_off_top, old_nose_cords[2] + nose_right_extension, old_nose_cords[3])
+	#face_parts["nose"]["padded"] = image.crop(new_nose_cords)
 	return face_parts
 
 
@@ -74,15 +111,7 @@ def get_feature_from_random_face(faces,feature):
 
 # get all faces
 # face_parts = get_face_image_parts_boxes(face_data[3],face_image)
-# selection = ''
 
-# pp.pprint(face_parts)
-
-
-# while selection != 'done':
-# 	selection = raw_input()
-# 	face_parts[selection].show()
-# 	pp.pprint(face_parts)
 
 
 

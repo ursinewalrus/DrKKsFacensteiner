@@ -1,8 +1,10 @@
 from PIL import Image
+from PIL import ImageFilter
+import sys
 
-def scale_to_smallerW(f1,f2):
-	f1W,f1H = f1.size
-	f2W,f2H = f2.size
+def scale_to_smallerW(f1,f2,scale):
+	f1W,f1H = int(f1.size[0] * scale), int(f1.size[1] * scale)
+	f2W,f2H = int(f2.size[0] * scale), int(f2.size[1] * scale)
 
 	newW = min(f1W,f2W)
 	wpercent = newW / float(max(f1W, f2W))
@@ -12,9 +14,9 @@ def scale_to_smallerW(f1,f2):
 
 	return f1, f2
 
-def scale_to_smallerH(f1,f2):
-	f1W,f1H = f1.size
-	f2W,f2H = f2.size
+def scale_to_smallerH(f1,f2,scale):
+	f1W,f1H = int(f1.size[0] * scale), int(f1.size[1] * scale)
+	f2W,f2H = int(f2.size[0] * scale), int(f2.size[1] * scale)
 
 	newH = min(f1H,f2H)
 	Hpercent = newH / float(max(f1H, f2H))
@@ -27,10 +29,11 @@ def scale_to_smallerH(f1,f2):
 # scale_priority = 'vert' or 'hort'
 # hort for things in a row
 # vert for things stacked
-def combine_ims(im1,im2,scale_priority):
-
+def combine_ims(im1,im2,scale_priority,scale = 1 ):
+	scale = scale * 3 
+	# scale constrained by what comes below/beside
 	if scale_priority == 'hort':
-		f1,f2 = scale_to_smallerH(im1,im2)
+		f1,f2 = scale_to_smallerH(im1,im2,scale)
 		f1W, f1H = f1.size
 		f2W, f2H = f2.size
 		newW = f1W + f2W;
@@ -38,8 +41,9 @@ def combine_ims(im1,im2,scale_priority):
 		new_im = Image.new('RGB', (newW,newH))
 		new_im.paste(f1,(0,0));		
 		new_im.paste(f2,(f1W,0))
-	else:
-		f1,f2 = scale_to_smallerW(im1,im2)
+		new_im = smooth_stitch(f1W,new_im,scale_priority)
+	elif scale_priority == 'vert':
+		f1,f2 = scale_to_smallerW(im1,im2,scale)
 		f1W, f1H = f1.size
 		f2W, f2H = f2.size
 		newH = f1H + f2H;
@@ -47,9 +51,30 @@ def combine_ims(im1,im2,scale_priority):
 		new_im = Image.new('RGB', (newW,newH))
 		new_im.paste(f1,(0,0));		
 		new_im.paste(f2,(0,f1H))
+		new_im = smooth_stitch(f1H,new_im,scale_priority)
 
 	return new_im
 
+
+def smooth_stitch(divide_cord,image,direction):
+	W,H = image.size
+	# joined hort
+	if direction == 'hort':		
+		seem_cords = (divide_cord - 10, 0 , divide_cord + 10, H)
+		seem = image.crop(seem_cords)
+		seem.show()
+		seem = seem.filter(ImageFilter.UnsharpMask())
+		image.paste(seem,(divide_cord - 10, 0))
+		seem.show()
+	# joined vert
+	elif direction == 'vert':
+		seem_cords = (0, divide_cord - 10, W , divide_cord + 10)
+		seem = image.crop(seem_cords)
+		seem = seem.filter(ImageFilter.UnsharpMask())
+		image.paste(seem,(0,divide_cord - 10))
+	sys.exit()
+	return image
+	# image.ImageFilter.BoxBlur(9)
 # def rotate_im(im,degrees):
 
 
