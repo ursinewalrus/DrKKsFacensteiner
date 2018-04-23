@@ -30,7 +30,7 @@ def scale_to_smallerH(f1,f2,scale):
 # hort for things in a row
 # vert for things stacked
 def combine_ims(im1,im2,scale_priority,scale = 1 ):
-	scale = scale * 3 
+	scale = scale * 3
 	# scale constrained by what comes below/beside
 	if scale_priority == 'hort':
 		f1,f2 = scale_to_smallerH(im1,im2,scale)
@@ -59,20 +59,23 @@ def combine_ims(im1,im2,scale_priority,scale = 1 ):
 def smooth_stitch(divide_cord,image,direction):
 	W,H = image.size
 	# joined hort
+	# image.show()
+	# stop = raw_input('press any key to go')
 	if direction == 'hort':		
-		seem_cords = (divide_cord - 10, 0 , divide_cord + 10, H)
-		seem = image.crop(seem_cords)
-		seem.show()
-		seem = seem.filter(ImageFilter.UnsharpMask())
-		image.paste(seem,(divide_cord - 10, 0))
-		seem.show()
+		seam_cords = (divide_cord - 10, 0 , divide_cord + 10, H)
+		seam = image.crop(seam_cords)
+		# seam.show()
+		# stop = raw_input('press any key to go')
+		seam = seam.filter(ImageFilter.GaussianBlur(4))
+		image.paste(seam,(divide_cord - 10, 0))
 	# joined vert
 	elif direction == 'vert':
-		seem_cords = (0, divide_cord - 10, W , divide_cord + 10)
-		seem = image.crop(seem_cords)
-		seem = seem.filter(ImageFilter.UnsharpMask())
-		image.paste(seem,(0,divide_cord - 10))
-	sys.exit()
+		seam_cords = (0, divide_cord - 10, W , divide_cord + 10)
+		seam = image.crop(seam_cords)
+		seam = seam.filter(ImageFilter.GaussianBlur(4))
+		image.paste(seam,(0,divide_cord - 10))
+	# image.show()
+	# stop = raw_input('press any key to go')
 	return image
 	# image.ImageFilter.BoxBlur(9)
 # def rotate_im(im,degrees):
