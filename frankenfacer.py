@@ -3,6 +3,7 @@ import json
 import stitch
 import feature_chop
 import pprint as pp
+import smoothing
 
 
 
@@ -20,6 +21,7 @@ def frankenify(face_file):
 	right_eye = feature_chop.get_feature_from_random_face(faces,"right_eye")
 
 	nose = feature_chop.get_feature_from_random_face(faces,"nose")
+	nose_colors = smoothing.get_mean_pixel_color(nose)
 
 	left_cheek = feature_chop.get_feature_from_random_face(faces,"left_cheek")
 	right_cheek = feature_chop.get_feature_from_random_face(faces,"right_cheek")
@@ -37,14 +39,28 @@ def frankenify(face_file):
 
 	basic_face = stitch.combine_ims(eye_and_nose,mouth,"vert")
 
-	basic_face.save("franken.jpg")
-	basic_face.show()
+	basic_face = smoothing.set_pixels_to_average_color(basic_face,nose_colors,False)
+
+	return basic_face
+	# basic_face.save("franken.jpg")
+	# basic_face.show()
 
 def feature_replace(face_file):
 	face_image = Image.open(face_file)
 	# oh wait i dont actually have full face cords, will hold off on this
 	# 4 point chin actually gets everything so could work...
-frankenify('5people.jpg')
+
+f1 = frankenify('5people.jpg')
+for i in range(10):
+	f2 = frankenify('5people.jpg')
+	f1_size = f1.size
+	f2_size = f2.size
+	im_size = min(f1_size[0],f2_size[0]),min(f1_size[1],f2_size[1])
+	f1 = f1.resize(im_size)
+	f2 = f2.resize(im_size)
+	f1 = Image.blend(f1,f2,0.5)
+f1.show()
+f1.save("10blended.jpg")
 
 # while selection != 'done':
 # 	selection = raw_input()

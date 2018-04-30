@@ -90,8 +90,13 @@ def pad_face_image_parts(face_parts,image):
 	upper_lip_height = (face_parts['top_lip']['cords'][1] - face_parts['nose_tip']['cords'][3])
 	old_mouth_cords = face_parts["bottom_lip"]["cords"]
 	new_mouth_cords = (old_mouth_cords[0],old_mouth_cords[1] - upper_lip_height,old_mouth_cords[2],old_mouth_cords[3])
+	# face_parts["bottom_lip"]["padded"] = image.crop(new_mouth_cords)
+	# adds padding to sides of the mouth
+	center_left_eye = face_parts["left_eye"]["cords"][2] - (face_parts["left_eye"]["cords"][2] - face_parts["left_eye"]["cords"][0])
+	center_right_eye = face_parts["right_eye"]["cords"][2] + (face_parts["right_eye"]["cords"][2] - face_parts["right_eye"]["cords"][0])
+	# old_mouth_cords = face_parts["bottom_lip"]["padded"]
+	new_mouth_cords = (center_left_eye,old_mouth_cords[1] - upper_lip_height,center_right_eye,old_mouth_cords[3])
 	face_parts["bottom_lip"]["padded"] = image.crop(new_mouth_cords)
-
 	# adds cheeks around the nose
 	# nose_left_extension = face_parts["nose"]["cords"][0] - face_parts["left_eye"]["cords"][0]
 	# nose_right_extension = face_parts["nose"]["cords"][3] - face_parts["right_eye"]["cords"][3] 

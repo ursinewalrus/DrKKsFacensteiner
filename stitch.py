@@ -1,6 +1,7 @@
 from PIL import Image
 from PIL import ImageFilter
 import sys
+import smoothing
 
 def scale_to_smallerW(f1,f2,scale):
 	f1W,f1H = int(f1.size[0] * scale), int(f1.size[1] * scale)
@@ -41,7 +42,7 @@ def combine_ims(im1,im2,scale_priority,scale = 1 ):
 		new_im = Image.new('RGB', (newW,newH))
 		new_im.paste(f1,(0,0));		
 		new_im.paste(f2,(f1W,0))
-		new_im = smooth_stitch(f1W,new_im,scale_priority)
+		#new_im = smooth_stitch(f1W,new_im,scale_priority)
 	elif scale_priority == 'vert':
 		f1,f2 = scale_to_smallerW(im1,im2,scale)
 		f1W, f1H = f1.size
@@ -51,7 +52,7 @@ def combine_ims(im1,im2,scale_priority,scale = 1 ):
 		new_im = Image.new('RGB', (newW,newH))
 		new_im.paste(f1,(0,0));		
 		new_im.paste(f2,(0,f1H))
-		new_im = smooth_stitch(f1H,new_im,scale_priority)
+		#new_im = smooth_stitch(f1H,new_im,scale_priority)
 
 	return new_im
 
