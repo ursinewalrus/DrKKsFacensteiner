@@ -1,5 +1,5 @@
 from PIL import Image
-allowed_color_deviation = 100
+allowed_color_deviation = 300
 
 
 def get_mean_pixel_color(image):

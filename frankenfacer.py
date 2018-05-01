@@ -39,7 +39,7 @@ def frankenify(face_file):
 
 	basic_face = stitch.combine_ims(eye_and_nose,mouth,"vert")
 
-	basic_face = smoothing.set_pixels_to_average_color(basic_face,nose_colors,False)
+	# basic_face = smoothing.set_pixels_to_average_color(basic_face,nose_colors,False)
 
 	return basic_face
 	# basic_face.save("franken.jpg")
